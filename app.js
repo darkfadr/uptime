@@ -2,19 +2,23 @@
  * Monitor remote server uptime.
  */
 
-var http       = require('http');
-var url        = require('url');
-var express    = require('express');
-var config     = require('config');
-var socketIo   = require('socket.io');
-var fs         = require('fs');
+import http       from 'http';
+import url        from 'url';
+import express    from 'express';
+import config     from 'config';
+import socketIo   from 'socket.io';
+import fs         from 'fs';
 var monitor    = require('./lib/monitor');
 var analyzer   = require('./lib/analyzer');
 var CheckEvent = require('./models/checkEvent');
 var Ping       = require('./models/ping');
 var PollerCollection = require('./lib/pollers/pollerCollection');
-var apiApp     = require('./app/api/app');
+import apiApp from './app/api/app';
 var dashboardApp = require('./app/dashboard/app');
+
+let serverUrl = url.parse(config.url);
+let port = process.env.PORT || serverUrl || 80;
+const host = process.env.HOST || serverUrl.hostname;
 
 // database
 
@@ -61,68 +65,59 @@ config.plugins.forEach(function(pluginName) {
 
 app.emit('beforeFirstRoute', app, apiApp);
 
-app.configure('development', function() {
-  if (config.verbose) mongoose.set('debug', true);
-  app.use(express.static(__dirname + '/public'));
+app.configure('development', () => {
+  config.verbose && mongoose.set('debug', true);
+  app.use(express.static(`${__dirname}/public`));
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 });
 
-app.configure('production', function() {
-  var oneYear = 31557600000;
-  app.use(express.static(__dirname + '/public', { maxAge: oneYear }));
+app.configure('production', () => {
+  app.use(express.static(`${__dirname}/public`, { maxAge: 31557600000 }));
   app.use(express.errorHandler());
 });
 
 // Routes
 app.emit('beforeApiRoutes', app, apiApp);
 app.use('/api', apiApp);
-
 app.emit('beforeDashboardRoutes', app, dashboardApp);
 app.use('/dashboard', dashboardApp);
-app.get('/', function(req, res) {
-  res.redirect('/dashboard/events');
-});
 
-app.get('/favicon.ico', function(req, res) {
-  res.redirect(301, '/dashboard/favicon.ico');
-});
+app.get('/', (req, res)  => res.redirect('/dashboard/events'));
+app.get('/favicon.ico', (req, res) => res.redirect(301, '/dashboard/favicon.ico'));
 
 app.emit('afterLastRoute', app);
 
 // Sockets
+//TODO: pass io object to controllers and route handlers to further decouple app.js
 var io = socketIo.listen(server);
 
-io.configure('production', function() {
+io.configure('production', () => {
   io.enable('browser client etag');
   io.set('log level', 1);
 });
 
-io.configure('development', function() {
-  if (!config.verbose) io.set('log level', 1);
+io.configure('development', () => {
+  !config.verbose && io.set('log level', 1);
 });
 
-CheckEvent.on('afterInsert', function(event) {
+CheckEvent.on('afterInsert', (event) => {
   io.sockets.emit('CheckEvent', event.toJSON());
 });
 
-io.sockets.on('connection', function(socket) {
-  socket.on('set check', function(check) {
-    socket.set('check', check);
-  });
-  Ping.on('afterInsert', function(ping) {
-    socket.get('check', function(err, check) {
-      if (ping.check == check) {
-        socket.emit('ping', ping);
-      }
+io.sockets.on('connection', socket => {
+  socket.on('set check', check => socket.set('check', check));
+  Ping.on('afterInsert', ping => {
+    socket.get('check', (err, check) => {
+      (ping.check == check) && socket.emit('ping', ping);
     });
   });
 });
 
 // old way to load plugins, kept for BC
-fs.exists('./plugins/index.js', function(exists) {
+fs.exists('./plugins/index.js', (exists) => {
   if (exists) {
-    var pluginIndex = require('./plugins');
-    var initFunction = pluginIndex.init || pluginIndex.initWebApp;
+    const pluginIndex = require('./plugins');
+    const initFunction = pluginIndex.init || pluginIndex.initWebApp;
     if (typeof initFunction === 'function') {
       initFunction({
         app:       app,
@@ -141,23 +136,15 @@ module.exports = app;
 var monitorInstance;
 
 if (!module.parent) {
-  var serverUrl = url.parse(config.url);
-  var port;
   if (config.server && config.server.port) {
     console.error('Warning: The server port setting is deprecated, please use the url setting instead');
     port = config.server.port;
   } else {
-    port = serverUrl.port;
-    if (port === null) {
-      port = 80;
-    }
+    port = serverUrl.port || 80;
   }
-  var port = process.env.PORT || port;
-  var host = process.env.HOST || serverUrl.hostname;
-  server.listen(port, function(){
-    console.log("Express server listening on host %s, port %d in %s mode", host, port, app.settings.env);
-  });
-  server.on('error', function(e) {
+  
+  server.listen(port, () => console.log(`Express server listening on host ${host}, port ${port} in ${app.settings.env} mode`));
+  server.on('error', e => {
     if (monitorInstance) {
       monitorInstance.stop();
       process.exit(1);

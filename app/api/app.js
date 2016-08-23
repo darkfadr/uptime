@@ -1,28 +1,21 @@
 /**
  * Module dependencies.
  */
-var express    = require('express');
+import express from 'express';
 var Check      = require('../../models/check');
 var CheckEvent = require('../../models/checkEvent');
 
-var app = module.exports = express();
+var app = express();
 
-var debugErrorHandler = function() {
+function debugErrorHandler() {
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 }
 
 // middleware
-app.configure(function(){
-  app.use(app.router);
-});
-
-app.configure('development', debugErrorHandler);
-
+app.configure(() => app.use(app.router));
 app.configure('test', debugErrorHandler);
-
-app.configure('production', function(){
-  app.use(express.errorHandler());
-});
+app.configure('development', debugErrorHandler);
+app.configure('production', () => app.use(express.errorHandler()));
 
 
 // up count
@@ -64,19 +57,19 @@ app.get('/checks/count', function(req, res, next) {
   }
 });
 
-// Routes
 
+
+// endpoints
 require('./routes/check')(app);
 require('./routes/tag')(app);
 require('./routes/ping')(app);
 
 // route list
-app.get('/', function(req, res) {
-  var routes = [];
+app.get('/', (req, res) => {
+  let routes = [];
   for (var verb in app.routes) {
-    app.routes[verb].forEach(function(route) {
-      routes.push({method: verb.toUpperCase() , path: app.route + route.path});
-    });
+    app.routes[verb]
+      .forEach(route => routes.push({method: verb.toUpperCase() , path: `${app.route}${route.path}`}) );
   }
   res.json(routes);
 });
@@ -85,3 +78,5 @@ if (!module.parent) {
   app.listen(3000);
   console.log('Express started on port 3000');
 }
+
+export default app;
