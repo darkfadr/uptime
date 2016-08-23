@@ -9,7 +9,7 @@ import config     from 'config';
 import socketIo   from 'socket.io';
 import fs         from 'fs';
 var monitor    = require('./lib/monitor');
-var analyzer   = require('./lib/analyzer');
+import Analyzer from './lib/analyzer';
 var CheckEvent = require('./models/checkEvent');
 var Ping       = require('./models/ping');
 var PollerCollection = require('./lib/pollers/pollerCollection');
@@ -24,7 +24,7 @@ const host = process.env.HOST || serverUrl.hostname;
 
 import mongoose from './bootstrap';
 
-var a = analyzer.createAnalyzer(config.analyzer);
+var a = new Analyzer(config.analyzer);
 a.start();
 
 // web front

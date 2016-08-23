@@ -5,7 +5,6 @@ import Monitor from './lib/monitor';
 // start the monitor
 const monitor = new Monitor(config.monitor);
 
-
 // load plugins
 config.plugins.forEach(function(pluginName) {
   var plugin = require(pluginName);
