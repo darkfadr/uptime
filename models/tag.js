@@ -1,18 +1,18 @@
-var mongoose = require('mongoose');
-var Schema   = mongoose.Schema;
-var moment   = require('moment');
-var async    = require('async');
+const mongoose = require('mongoose');
+const Schema   = mongoose.Schema;
+const moment   = require('moment');
+const async    = require('async');
 
 // model dependencies
-var TagHourlyStat    = require('./tagHourlyStat');
-var TagDailyStat     = require('./tagDailyStat');
-var TagMonthlyStat   = require('./tagMonthlyStat');
-var TagYearlyStat    = require('./tagYearlyStat');
-var Check            = require('./check');
-var CheckHourlyStat  = require('./checkHourlyStat');
-var CheckDailyStat   = require('./checkDailyStat');
-var CheckMonthlyStat = require('./checkMonthlyStat');
-var CheckYearlyStat  = require('./checkYearlyStat');
+const TagHourlyStat    = require('./tagHourlyStat');
+const TagDailyStat     = require('./tagDailyStat');
+const TagMonthlyStat   = require('./tagMonthlyStat');
+const TagYearlyStat    = require('./tagYearlyStat');
+const Check            = require('./check');
+const CheckHourlyStat  = require('./checkHourlyStat');
+const CheckDailyStat   = require('./checkDailyStat');
+const CheckMonthlyStat = require('./checkMonthlyStat');
+const CheckYearlyStat  = require('./checkYearlyStat');
 
 // main model
 var Tag = new Schema({

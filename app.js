@@ -18,7 +18,7 @@ var dashboardApp = require('./app/dashboard/app');
 
 // database
 
-var mongoose   = require('./bootstrap');
+import mongoose from './bootstrap';
 
 var a = analyzer.createAnalyzer(config.analyzer);
 a.start();
@@ -37,7 +37,7 @@ app.configure(function(){
   app.use(express.cookieParser('Z5V45V6B5U56B7J5N67J5VTH345GC4G5V4'));
   app.use(express.cookieSession({
     key:    'uptime',
-    secret: 'FZ5HEE5YHD3E566756234C45BY4DSFZ4',
+    secret: 'FZ5HEE5YHD3E566754:JBV*DV$SFNSF35725745BY4DSFZ4',
     proxy:  true,
     cookie: { maxAge: 60 * 60 * 1000 }
   }));

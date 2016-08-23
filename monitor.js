@@ -1,9 +1,10 @@
-var fs      = require('fs');
-var config  = require('config');
-var Monitor = require('./lib/monitor');
+import fs from 'fs';
+import config from 'config';
+import Monitor from './lib/monitor';
 
 // start the monitor
-monitor = Monitor.createMonitor(config.monitor);
+const monitor = new Monitor(config.monitor);
+
 
 // load plugins
 config.plugins.forEach(function(pluginName) {
@@ -18,4 +19,4 @@ config.plugins.forEach(function(pluginName) {
 
 monitor.start();
 
-module.exports = monitor;
+export default monitor;

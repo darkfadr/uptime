@@ -97,9 +97,9 @@ function color(str, color) {
   var color_attrs = color.split("+");
   var ansi_str = "";
   for (var i=0, attr; attr = color_attrs[i]; i++) {
-    ansi_str += "\033[" + ANSI_CODES[attr] + "m";
+    // ansi_str += "\033[" + ANSI_CODES[attr] + "m";
   }
-  ansi_str += str + "\033[" + ANSI_CODES["off"] + "m";
+  // ansi_str += str + "\033[" + ANSI_CODES["off"] + "m";
   return ansi_str;
 }
 
