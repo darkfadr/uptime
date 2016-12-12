@@ -1,10 +1,85 @@
-var async = require('async');
-var CheckEvent = require('../models/checkEvent');
-var Check = require('../models/check');
+import async from 'async';
+import {Check, CheckEvent} from '../models';
 
-var PAUSED = -1;
-var DOWN = 0;
-var UP = 1;
+const PAUSED = -1;
+const DOWN = 0;
+const UP = 1;
+
+
+class IntervalBuilder{
+  constructor() {
+    this.objectIds = [];
+    this.nbObjects = 0;
+    this.states = {};
+    this.intervals = []; // intervals are [begin, end, state]
+    this.currentState = null;
+    this.currentInterval = [];
+    this.downtime = 0;
+    this.duration = 0;
+  }
+  addTarget(objectId){
+    this.objectIds.push(objectId._id ? objectId._id : objectId);
+    this.nbObjects++; 
+  }
+  getCurrentCheck(callback){
+    Check.findOne({ _id: this.objectIds[0] }, callback);
+  }
+  isMultiTarget(){
+    return this.nbObjects > 1;
+  }
+  addEvent(objectId, message){
+    switch (message) {
+      case 'up':
+        if (!this.isUp(objectId)) {
+          this.states[objectId] = UP;
+          return true;
+        }
+        break;
+      case 'down':
+        if (!this.isDown(objectId)) {
+          this.states[objectId] = DOWN;
+          return true;
+        }
+        break;
+      case 'paused':
+      case 'restarted':
+      default:
+        if (!this.isPaused(objectId)) {
+          this.states[objectId] = PAUSED;
+          return true;
+        }
+        break;
+    }
+    return false;
+  }
+  updateCurrentState(timestamp){
+    timestamp = this.getTimestamp(timestamp);
+    const currentState = this.getGlobalState();
+    if (currentState !== this.currentState) {
+      this.completeCurrentInterval(timestamp);
+      this.currentInterval = currentState == 1 ? [] : [timestamp];
+      this.currentState = currentState;
+      return true;
+    }
+    return false;
+  }
+  getGlobalState(){
+    let ups = 0;
+    let paused = 0;
+    for (var objectId in this.states) {
+      if (this.isUp(objectId)) ups++;
+      if (this.isPaused(objectId)) paused++;
+    }
+    if (!this.isMultiTarget() && paused > 0) {
+      return PAUSED; // global state is paused because there is only one check
+    }
+    if ((ups + paused) == this.nbObjects) {
+      return UP; // ignore paused in multiTarget
+    }
+    return DOWN; // at least one of the targets is paused
+  }
+
+}
 
 /*
  * Usage:
@@ -15,21 +90,6 @@ var UP = 1;
  *     // do things
  *   });
  */
-var IntervalBuilder = function() {
-  this.objectIds = [];
-  this.nbObjects = 0;
-  this.states = {};
-  this.intervals = []; // intervals are [begin, end, state]
-  this.currentState = null;
-  this.currentInterval = [];
-  this.downtime = 0;
-  this.duration = 0;
-};
-
-IntervalBuilder.prototype.addTarget = function(objectId) {
-  this.objectIds.push(objectId._id ? objectId._id : objectId);
-  this.nbObjects++;
-};
 
 IntervalBuilder.prototype.build = function(begin, end, callback) {
   var self = this;
@@ -60,16 +120,6 @@ IntervalBuilder.prototype.build = function(begin, end, callback) {
 
       return callback(null, self.intervals, self.downtime, self.duration);
   });
-};
-
-
-IntervalBuilder.prototype.getCurrentCheck = function(callback) {
-  Check.findOne({ _id: this.objectIds[0] }, callback);
-};
-
-
-IntervalBuilder.prototype.isMultiTarget = function() {
-  return this.nbObjects > 1;
 };
 
 IntervalBuilder.prototype.determineInitialState = function(timestamp, callback) {
@@ -169,52 +219,6 @@ IntervalBuilder.prototype.buildIntervalsForPeriod = function(begin, end, callbac
     });
     callback(null);
   });
-};
-
-/**
- * Add an event for a given check.
- *
- * Returns true if the event modifies the state of a given check, false otherwise
- */
-IntervalBuilder.prototype.addEvent = function(objectId, message) {
-  switch (message) {
-    case 'up':
-      if (!this.isUp(objectId)) {
-        this.states[objectId] = UP;
-        return true;
-      }
-      break;
-    case 'down':
-      if (!this.isDown(objectId)) {
-        this.states[objectId] = DOWN;
-        return true;
-      }
-      break;
-    case 'paused':
-    case 'restarted':
-    default:
-      if (!this.isPaused(objectId)) {
-        this.states[objectId] = PAUSED;
-        return true;
-      }
-      break;
-  }
-  return false;
-};
-
-/**
- * Return true if the global state was updated, false otherwise.
- */
-IntervalBuilder.prototype.updateCurrentState = function(timestamp) {
-  timestamp = this.getTimestamp(timestamp);
-  var currentState = this.getGlobalState();
-  if (currentState !== this.currentState) {
-    this.completeCurrentInterval(timestamp);
-    this.currentInterval = currentState == 1 ? [] : [timestamp];
-    this.currentState = currentState;
-    return true;
-  }
-  return false;
 };
 
 IntervalBuilder.prototype.getGlobalState = function() {

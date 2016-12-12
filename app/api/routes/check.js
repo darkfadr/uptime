@@ -1,12 +1,7 @@
 /**
  * Module dependencies.
  */
-
-var Check            = require('../../../models/check');
-var CheckEvent       = require('../../../models/checkEvent');
-var CheckHourlyStat  = require('../../../models/checkHourlyStat');
-var CheckDailyStat   = require('../../../models/checkDailyStat');
-var CheckMonthlyStat = require('../../../models/checkMonthlyStat');
+import {Check, CheckEvent, CheckHourlyStat, CheckDailyStat, CheckMonthlyStat} from '../../../models';
 
 /**
  * Check Routes

@@ -1,10 +1,4 @@
-/**
- * Module dependencies.
- */
-
-var Check      = require('../../../models/check');
-var CheckEvent = require('../../../models/checkEvent');
-var Ping       = require('../../../models/ping');
+import {Ping, Check, CheckEvent} from '../../../models';
 
 /**
  * Check Routes
@@ -20,9 +14,10 @@ module.exports = function(app) {
     Ping
     .find(query)
     .sort({ timestamp: -1 })
-    .limit(50)
-    .skip((req.param('page', 1) - 1) * 50)
-    .exec(function(err, pings) {
+    .limit(1000)
+    .skip((req.param('page', 1) - 1) * 100)
+    .exec((err, pings) => {
+      console.log('============================================>', pings.length)
       if (err) return next(err);
       res.json(pings);
     });
@@ -42,6 +37,7 @@ module.exports = function(app) {
     });
   });
 
+  //to Deprecate
   app.post('/pings', function(req, res) {
     Check.findById(req.body.checkId, function(err1, check) {
       if (err1) {

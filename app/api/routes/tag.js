@@ -1,11 +1,5 @@
-/**
- * Module dependencies.
- */
-
-var Tag           = require('../../../models/tag');
-var TagHourlyStat = require('../../../models/tagHourlyStat');
-var CheckEvent    = require('../../../models/checkEvent');
-var async         = require('async');
+import async from 'async';
+import {CheckEvent, Tag, TagHourlyStat} from '../../../models';
 
 /**
  * Check Routes

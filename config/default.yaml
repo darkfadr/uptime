@@ -6,6 +6,7 @@ mongodb:
   user: null
   password: null
   connectionString: mongodb://localhost/uptime      # alternative to setting server, database, user and password separately
+  #connectionString: mongodb://fl1ctsqluat01/uptime      # alternative to setting server, database, user and password separately
 
 monitor:
   name:                   origin
@@ -19,13 +20,13 @@ analyzer:
   qosAggregationInterval: 600000     # ten minutes
   pingHistory:            8035200000 # three months
 
-autoStartMonitor: true
+autoStartMonitor: false
 
 plugins:
   - ./plugins/console
   - ./plugins/patternMatcher
   - ./plugins/httpOptions
-  # - ./plugins/email
+  - ./plugins/email
   # - ./plugins/basicAuth
 
 email:

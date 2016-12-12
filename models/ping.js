@@ -27,7 +27,7 @@ Ping.methods.setDetails = function(details) {
   this.markModified('details');
 };
 
-Ping.statics.createForCheck = function(status, timestamp, time, check, monitorName, error, details, callback) {
+Ping.statics.createForCheck = function({status, timestamp, time, check, monitorName, error, details}, callback) {
   timestamp = timestamp || new Date();
   timestamp = timestamp instanceof Date ? timestamp : new Date(parseInt(timestamp, 10));
 
@@ -48,7 +48,8 @@ Ping.statics.createForCheck = function(status, timestamp, time, check, monitorNa
     ping.error = error;
   }
   if (details) {
-    ping.setDetails(JSON.parse(details));
+    details = typeof details === 'string' && JSON.parse(details) || details;
+    ping.setDetails(details);
   }
   ping.save(function(err1) {
     if (err1) return callback(err1);

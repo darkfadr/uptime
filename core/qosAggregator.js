@@ -3,8 +3,11 @@ var moment = require('moment');
 var Ping   = require('../models/ping');
 var IntervalBuilder = require('./intervalBuilder');
 
-var QosAggregator = function() {
+function QosAggregator() {
 };
+
+
+
 
 QosAggregator.prototype.getCallback = function(callback){
   if ('undefined' == typeof callback) {
@@ -610,4 +613,6 @@ QosAggregator.prototype.updateLastYearQos = function(callback) {
   this.updateYearlyQos(now, callback);
 };
 
-module.exports = new QosAggregator();
+// module.exports = new QosAggregator();
+
+export default new QosAggregator();

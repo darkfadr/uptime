@@ -1,36 +1,42 @@
 {
-  "name":    "hoot",
+  "name": "hoot",
   "description": "Remote monitoring for ISD HTTP applications",
   "version": "3.2.0",
   "author": "Ashley Narcisse-Austin",
   "private": true,
   "dependencies": {
+    "async": "0.1.22",
     "babel-core": "^6.11.4",
     "babel-eslint": "^6.1.2",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-polyfill": "^6.9.1",
     "babel-preset-es2015": "^6.9.0",
-    "mongoose":  "3.6.7",
-    "mongoose-lifecycle": "1.0.0",
-    "express":   "3.2.0",
-    "express-partials": "0.1.1",
+    "chalk": "^1.1.3",
+    "config": "0.4.32",
     "connect-flash": "0.1.0",
-    "ejs":       "0.8.3",
-    "config":    "0.4.32",
-    "async":     "0.1.22",
-    "socket.io": "0.9.14",
-    "semver":    "1.1.0",
-    "moment":    "2.1.0",
-    "nodemailer": "0.3.35",
-    "net-ping":  "1.1.7",
+    "ejs": "0.8.3",
+    "express": "3.2.0",
+    "express-partials": "0.1.1",
     "js-yaml": "2.1.0",
+    "moment": "2.1.0",
+    "mongoose": "3.6.7",
+    "mongoose-lifecycle": "1.0.0",
+    "net-ping": "1.1.7",
+    "nodemailer": "0.3.35",
+    "semver": "1.1.0",
+    "socket.io": "0.9.14",
     "webpagetest": "0.2.0"
   },
   "devDependencies": {
     "mocha": "1.7.x",
     "should": "1.1.0"
   },
-  "keywords": ["uptime", "monitoring", "api", "check"],
+  "keywords": [
+    "uptime",
+    "monitoring",
+    "api",
+    "check"
+  ],
   "repository": "https://github.com/fzaninotto/uptime",
   "license": "MIT",
   "engines": {
@@ -39,6 +45,7 @@
   },
   "scripts": {
     "test": "node_modules/.bin/mocha test/lib/",
-    "start": "nodemon app.js --exec babel-node --presets es2015"
+    "start": "nodemon app.js --exec babel-node --presets es2015",
+    "poller": "nodemon monitor.js --exec babel-node --presets es2015"
   }
 }

@@ -1,19 +1,14 @@
-/*
- * Monitor remote server uptime.
- */
-
 import http       from 'http';
 import url        from 'url';
 import express    from 'express';
 import config     from 'config';
 import socketIo   from 'socket.io';
 import fs         from 'fs';
-var monitor    = require('./lib/monitor');
-import Analyzer from './lib/analyzer';
+// import Analyzer from './lib/analyzer';
 var CheckEvent = require('./models/checkEvent');
 var Ping       = require('./models/ping');
-var PollerCollection = require('./lib/pollers/pollerCollection');
 import apiApp from './app/api/app';
+import PollerCollection from './core/pollers/pollerCollection';
 var dashboardApp = require('./app/dashboard/app');
 
 let serverUrl = url.parse(config.url);
@@ -21,17 +16,14 @@ let port = process.env.PORT || serverUrl || 80;
 const host = process.env.HOST || serverUrl.hostname;
 
 // database
-
 import mongoose from './bootstrap';
-
-var a = new Analyzer(config.analyzer);
-a.start();
 
 // web front
 
 var app = module.exports = express();
 var server = http.createServer(app);
 
+// middleware
 app.configure(function(){
   app.use(app.router);
   // the following middlewares are only necessary for the mounted 'dashboard' app, 
@@ -131,9 +123,13 @@ fs.exists('./plugins/index.js', (exists) => {
   }
 });
 
-module.exports = app;
 
+// monitor
 var monitorInstance;
+if (config.autoStartMonitor) {
+  monitorInstance = require('./monitor');
+}
+
 
 if (!module.parent) {
   if (config.server && config.server.port) {
@@ -152,7 +148,5 @@ if (!module.parent) {
   });
 }
 
-// monitor
-if (config.autoStartMonitor) {
-  monitorInstance = require('./monitor');
-}
+module.exports = app;
+

@@ -2,16 +2,25 @@
  * Module dependencies.
  */
 import express from 'express';
-var Check      = require('../../models/check');
-var CheckEvent = require('../../models/checkEvent');
+import {Check, CheckEvent} from '../../models';
 
-var app = express();
+const app = express();
 
 function debugErrorHandler() {
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 }
 
+//CORS middleware
+function cors(req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+
+    next();
+}
+
 // middleware
+app.use(cors);
 app.configure(() => app.use(app.router));
 app.configure('test', debugErrorHandler);
 app.configure('development', debugErrorHandler);
@@ -19,15 +28,15 @@ app.configure('production', () => app.use(express.errorHandler()));
 
 
 // up count
-var upCount;
-var refreshUpCount = function(callback) {
+let upCount;
+const refreshUpCount = (callback) =>  {
   var count = { up: 0, down: 0, paused: 0, total: 0 };
   Check
   .find()
   .select({ isUp: 1, isPaused: 1 })
-  .exec(function(err, checks) {
+  .exec((err, checks) => {
     if (err) return callback(err);
-    checks.forEach(function(check) {
+    checks.forEach((check) => {
       count.total++;
       if (check.isPaused) {
         count.paused++;
@@ -42,15 +51,15 @@ var refreshUpCount = function(callback) {
   });
 };
 
-Check.on('afterInsert', function() { upCount = undefined; });
-Check.on('afterRemove', function() { upCount = undefined; });
-CheckEvent.on('afterInsert', function() { upCount = undefined; });
+Check.on('afterInsert', () => { upCount = undefined; });
+Check.on('afterRemove', () => { upCount = undefined; });
+CheckEvent.on('afterInsert', () => { upCount = undefined; });
 
-app.get('/checks/count', function(req, res, next) {
+app.get('/checks/count', (req, res, next) => {
   if (upCount) {
     res.json(upCount);
   } else {
-    refreshUpCount(function(err) {
+    refreshUpCount((err) => {
       if (err) return next(err);
       res.json(upCount);
     });

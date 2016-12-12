@@ -1,13 +1,15 @@
 import fs from 'fs';
 import config from 'config';
-import Monitor from './lib/monitor';
+import Monitor from './core/monitor';
+import Analyzer from './core/analyzer';
+import mongoose from './bootstrap';
 
-// start the monitor
 const monitor = new Monitor(config.monitor);
+const analyzer = new Analyzer(config.analyzer);
 
 // load plugins
 config.plugins.forEach(function(pluginName) {
-  var plugin = require(pluginName);
+  const plugin = require(pluginName);
   if (typeof plugin.initMonitor !== 'function') return;
   console.log('loading plugin %s on monitor', pluginName);
   plugin.initMonitor({
@@ -16,6 +18,8 @@ config.plugins.forEach(function(pluginName) {
   });
 });
 
+// start the monitor
 monitor.start();
+analyzer.start();
 
 export default monitor;
